@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import ProtectedRoute from "../components/ProtectedRoute";
+import ProtectedRoute from "../components/Protectedroute";
 import DashboardNavbar from "../components/DashboardNavbar";
 import { jsPDF } from "jspdf";
 import { useRouter } from "next/navigation";

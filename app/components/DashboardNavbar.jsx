@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Menu,
   X,
@@ -10,30 +10,54 @@ import {
   LogOut,
 } from "lucide-react";
 
-export default function DashboardNavbar({
+export default function ResponsiveShoeNavbar({
   search = "",
   setSearch = () => {},
-  category = "All", // Not used in component, but kept for signature
-  setCategory = () => {}, // Not used in component, but kept for signature
   cart = [],
   setShowCart = () => {},
   router,
 }) {
   const [openSearch, setOpenSearch] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState(false); // Controls the mobile drawer
+  const drawerRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("user");
-    // Using router.push("/") is generally better than window.location.replace for Next.js if available
-    router.push("/"); 
+    router.push("/");
   };
 
-  // Utility class for transition to apply to multiple icons/buttons
-  const iconTransition = "text-cyan-300 hover:text-cyan-100 cursor-pointer transition-colors duration-200";
+  // Utility class for common icon styling
+  const iconStyle = "text-cyan-300 hover:text-cyan-100 cursor-pointer transition-colors duration-200";
+
+  // --- Mobile Drawer Logic (Click/Escape outside) ---
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (drawerRef.current && !drawerRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [showMenu]);
+  // --------------------------------------------------
 
   return (
-    <header className="fixed top-0 left-0 w-full z-40 bg-[#041625]/85 backdrop-blur-xl border-b border-cyan-500/30">
+    <header className="fixed top-0 left-0 w-full z-40 bg-[#041625]/95 backdrop-blur-md border-b border-cyan-500/30 shadow-lg">
       <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         
         {/* LOGO */}
@@ -44,10 +68,10 @@ export default function DashboardNavbar({
           ShoeStore
         </div>
 
-        {/* DESKTOP */}
+        {/* DESKTOP NAV (Search, Cart, Profile, Logout) */}
         <div className="hidden md:flex items-center gap-5">
 
-          {/* Search Bar - Added transition for smoothness */}
+          {/* Search */}
           <div className="flex items-center bg-[#041b25] border border-cyan-500/30 px-3 py-2 rounded-lg w-64 focus-within:border-cyan-400 transition-colors duration-200">
             <Search size={18} className="text-cyan-300 mr-2" />
             <input
@@ -59,12 +83,12 @@ export default function DashboardNavbar({
             />
           </div>
 
-          {/* Cart - Uses shared transition utility */}
+          {/* Cart */}
           <div
             className="relative cursor-pointer"
             onClick={() => setShowCart((prev) => !prev)}
           >
-            <ShoppingCart size={26} className={iconTransition} />
+            <ShoppingCart size={26} className={iconStyle} />
             {cart.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-cyan-500 text-black rounded-full w-5 h-5 text-xs flex items-center justify-center font-semibold">
                 {cart.length}
@@ -72,52 +96,48 @@ export default function DashboardNavbar({
             )}
           </div>
 
-          {/* Profile - Uses shared transition utility */}
+          {/* Profile */}
           <User
             size={26}
-            className={iconTransition}
+            className={iconStyle}
             onClick={() => router.push("/profile")}
           />
 
-          {/* Logout - Slightly refined hover/focus states */}
+          {/* Logout */}
           <button
             onClick={handleLogout}
-            className="text-xs px-3 py-2 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/10 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            className="text-sm px-4 py-2 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
           >
             Logout
           </button>
         </div>
 
-        {/* MOBILE ICONS */}
+        {/* MOBILE ICONS (Search, Menu) */}
         <div className="md:hidden flex items-center gap-4">
 
-          {/* Search icon - Uses shared transition utility */}
+          {/* Search icon toggle */}
           <Search
             size={26}
-            className={iconTransition}
+            className={iconStyle}
             onClick={() => setOpenSearch((o) => !o)}
           />
 
-          {/* Hamburger/Close icon - Uses shared transition utility */}
-          {showMenu ? (
-            <X
-              size={28}
-              className={iconTransition}
-              onClick={() => setShowMenu(false)}
-            />
-          ) : (
-            <Menu
-              size={28}
-              className={iconTransition}
-              onClick={() => setShowMenu(true)}
-            />
-          )}
+          {/* Hamburger Menu icon */}
+          <Menu
+            size={28}
+            className={iconStyle}
+            onClick={() => setShowMenu(true)}
+          />
         </div>
       </nav>
 
-      {/* MOBILE SEARCH BAR */}
-      {openSearch && (
-        <div className="md:hidden bg-[#041b25] border-t border-cyan-500/20 px-4 py-3 transition-all duration-300 ease-in-out">
+      {/* MOBILE SEARCH BAR (Animated slide-down) */}
+      <div 
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          openSearch ? 'max-h-20 border-t border-cyan-500/20' : 'max-h-0'
+        }`}
+      >
+        <div className="px-4 py-3">
           <input
             type="text"
             placeholder="Search shoes..."
@@ -126,69 +146,89 @@ export default function DashboardNavbar({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-      )}
-
-      {/* ⭐ FLOATING MOBILE MENU ⭐ */}
+      </div>
+      
+      {/* 🚀 MOBILE DRAWER / SIDE-SHEET MENU */}
       {showMenu && (
         <>
-          {/* Optional: Add an overlay to close the menu on tap outside */}
+          {/* Backdrop (Darkens screen) */}
           <div 
-            className="fixed inset-0 z-45" 
-            onClick={() => setShowMenu(false)} 
-          />
+            className="fixed inset-0 bg-black/60 z-45 transition-opacity duration-300"
+            onClick={() => setShowMenu(false)}
+          ></div>
 
-          <div className="md:hidden fixed bottom-20 right-5 bg-[#03151f] border border-cyan-500/30 rounded-2xl p-2 w-40 shadow-xl z-50 animate-popup">
-            
-            {/* CART */}
-            <button
-              onClick={() => {
-                setShowCart((prev) => !prev);
-                setShowMenu(false);
-              }}
-              className="w-full flex items-center gap-3 text-left px-3 py-2 text-white/90 text-sm font-medium hover:bg-cyan-500/20 rounded-xl transition-colors duration-200"
-            >
-              <ShoppingCart size={18} className="text-cyan-300" />
-              Cart
-            </button>
+          {/* Drawer Content (Slides in from the right) */}
+          <div 
+            ref={drawerRef}
+            className={`fixed top-0 right-0 h-full w-64 bg-[#03151f] border-l border-cyan-500/40 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+              showMenu ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            <div className="p-4 flex flex-col h-full">
+              
+              {/* Header and Close Button */}
+              <div className="flex justify-between items-center mb-6 pb-2 border-b border-cyan-500/20">
+                <span className="text-lg font-bold text-cyan-300">Menu</span>
+                <X 
+                  size={24} 
+                  className={iconStyle} 
+                  onClick={() => setShowMenu(false)} 
+                />
+              </div>
 
-            {/* PROFILE */}
-            <button
-              onClick={() => {
-                router.push("/profile");
-                setShowMenu(false);
-              }}
-              className="w-full flex items-center gap-3 text-left px-3 py-2 text-white/90 text-sm font-medium hover:bg-cyan-500/20 rounded-xl transition-colors duration-200"
-            >
-              <User size={18} className="text-cyan-300" />
-              Profile
-            </button>
+              {/* Menu Items */}
+              <div className="flex flex-col gap-2">
+                
+                {/* Cart */}
+                <button
+                  onClick={() => {
+                    setShowCart((prev) => !prev);
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-3 text-white/90 text-base font-medium hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
+                >
+                  <span className="flex items-center gap-3">
+                    <ShoppingCart size={20} className="text-cyan-300" />
+                    Cart
+                  </span>
+                  {cart.length > 0 && (
+                    <span className="bg-cyan-500 text-black rounded-full w-6 h-6 text-xs flex items-center justify-center font-semibold">
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
 
-            <hr className="my-1 border-cyan-500/10" />
+                {/* Profile */}
+                <button
+                  onClick={() => {
+                    router.push("/profile");
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-3 text-white/90 text-base font-medium hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
+                >
+                  <User size={20} className="text-cyan-300" />
+                  Profile
+                </button>
+              </div>
 
-            {/* LOGOUT */}
-            <button
-              onClick={() => {
-                setShowMenu(false);
-                handleLogout();
-              }}
-              className="w-full flex items-center gap-3 text-left px-3 py-2 text-red-400 text-sm font-medium hover:bg-red-500/20 rounded-xl transition-colors duration-200"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+              {/* Logout (Stuck to the bottom) */}
+              <div className="mt-auto pt-4 border-t border-cyan-500/20">
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-3 text-red-400 text-base font-medium hover:bg-red-500/20 rounded-lg transition-colors duration-200"
+                >
+                  <LogOut size={20} />
+                  Logout
+                </button>
+              </div>
+
+            </div>
           </div>
         </>
       )}
-
-      {/* ANIMATIONS */}
-      <style>{`
-        /* Keep original animation, or replace with a CSS transition for complex movement */
-        @keyframes popup {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-popup { animation: popup 0.25s ease-out; }
-      `}</style>
     </header>
   );
 }
