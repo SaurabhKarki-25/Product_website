@@ -33,7 +33,8 @@ export default function ResponsiveShoeNavbar({
   // --- Mobile Drawer Logic (Click/Escape outside) ---
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (drawerRef.current && !drawerRef.current.contains(event.target)) {
+      // Check if click is outside the drawer AND outside the menu icon itself
+      if (drawerRef.current && !drawerRef.current.contains(event.target) && !document.querySelector('.menu-icon').contains(event.target)) {
         setShowMenu(false);
       }
     };
@@ -57,7 +58,7 @@ export default function ResponsiveShoeNavbar({
   // --------------------------------------------------
 
   return (
-    <header className="fixed top-0 left-0 w-full z-40 bg-[#041625]/95 backdrop-blur-md border-b border-cyan-500/30 shadow-lg">
+    <header className="fixed top-0 left-0 w-full z-40 bg-[#041625] border-b border-cyan-500/30 shadow-lg">
       <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         
         {/* LOGO */}
@@ -125,7 +126,7 @@ export default function ResponsiveShoeNavbar({
           {/* Hamburger Menu icon */}
           <Menu
             size={28}
-            className={iconStyle}
+            className={`${iconStyle} menu-icon`} // Added class for click handler
             onClick={() => setShowMenu(true)}
           />
         </div>
@@ -137,7 +138,7 @@ export default function ResponsiveShoeNavbar({
           openSearch ? 'max-h-20 border-t border-cyan-500/20' : 'max-h-0'
         }`}
       >
-        <div className="px-4 py-3">
+        <div className="px-4 py-3 bg-[#041625]">
           <input
             type="text"
             placeholder="Search shoes..."
@@ -179,13 +180,13 @@ export default function ResponsiveShoeNavbar({
               {/* Menu Items */}
               <div className="flex flex-col gap-2">
                 
-                {/* Cart */}
+                {/* Cart - BACKGROUND BLACK APPLIED HERE */}
                 <button
                   onClick={() => {
                     setShowCart((prev) => !prev);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center justify-between px-3 py-3 text-white/90 text-base font-medium hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
+                  className="w-full flex items-center justify-between px-3 py-3 text-white/90 text-base font-medium **bg-black** hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
                 >
                   <span className="flex items-center gap-3">
                     <ShoppingCart size={20} className="text-cyan-300" />
@@ -198,27 +199,27 @@ export default function ResponsiveShoeNavbar({
                   )}
                 </button>
 
-                {/* Profile */}
+                {/* Profile - BACKGROUND BLACK APPLIED HERE */}
                 <button
                   onClick={() => {
                     router.push("/profile");
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 text-white/90 text-base font-medium hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
+                  className="w-full flex items-center gap-3 px-3 py-3 text-white/90 text-base font-medium **bg-black** hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
                 >
                   <User size={20} className="text-cyan-300" />
                   Profile
                 </button>
               </div>
 
-              {/* Logout (Stuck to the bottom) */}
+              {/* Logout (Stuck to the bottom) - BACKGROUND BLACK APPLIED HERE */}
               <div className="mt-auto pt-4 border-t border-cyan-500/20">
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     handleLogout();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 text-red-400 text-base font-medium hover:bg-red-500/20 rounded-lg transition-colors duration-200"
+                  className="w-full flex items-center gap-3 px-3 py-3 text-red-400 text-base font-medium **bg-black** hover:bg-red-500/20 rounded-lg transition-colors duration-200"
                 >
                   <LogOut size={20} />
                   Logout

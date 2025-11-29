@@ -122,7 +122,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-[#041625]/95 border-t border-cyan-500/20">
+        <div className="md:hidden bg-[black]/90 backdrop-blur-md border-t border-cyan-500/20 shadow-lg">
           <ul className="flex flex-col py-4 px-6 gap-6">
             {menuItems.map((item) => (
               <li key={item.link}>
