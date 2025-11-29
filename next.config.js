@@ -1,14 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  reactCompiler: true,
-   images: {
-    domains: ["images.pexels.com"],  // allow product images
+  images: {
+    domains: ["images.pexels.com"],
   },
 };
 
-
-module.exports = nextConfig;
-
-
 export default nextConfig;
+
