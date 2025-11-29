@@ -393,7 +393,7 @@ export default function Dashboard() {
   const sendWhatsAppOrder = () => {
     if (!cart.length) return;
 
-    const phone = "91XXXXXXXXXX"; // <-- put your WhatsApp number here
+    const phone = "916396088269"; // <-- put your WhatsApp number here
 
     let msg = `🧾 *Your ShoeStore Order*\n\n`;
 

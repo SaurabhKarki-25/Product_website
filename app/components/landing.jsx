@@ -37,7 +37,7 @@ Color: ${color || "Not selected"}
 Message: ${randomMessage}
 `;
 
-    const phoneNumber = "918279584076"; // 91 + your number
+    const phoneNumber = "916396088269"; // 91 + your number
 
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       finalMessage
