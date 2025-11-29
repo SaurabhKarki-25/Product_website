@@ -6,7 +6,7 @@ import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 
 export default function ProductCard({ item, addToCart }) {
-  // Static star rating for visual polish
+  
   const Rating = () => (
     <div className="flex items-center gap-1 mt-1">
       <span className="text-yellow-400 text-xs sm:text-sm">★★★★☆</span>
@@ -23,7 +23,7 @@ export default function ProductCard({ item, addToCart }) {
                hover:shadow-[0_0_35px_rgba(0,255,255,0.4)]
                transition-all duration-300 hover:scale-[1.03] relative group"
     >
-      {/* Top Badges (FAssured/Premium) */}
+      {/* Top Badges */}
       {(item.brand.includes("Nike") || item.brand.includes("Adidas")) && (
         <span className="absolute top-0 right-0 bg-green-600 text-white text-[9px] sm:text-[10px] px-2 py-0.5 rounded-bl-xl font-bold tracking-wider z-10">
           ✅ Verified

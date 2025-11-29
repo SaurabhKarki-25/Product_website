@@ -4,8 +4,9 @@ import React from 'react';
 
 const categories = [
   { name: "All Shoes", value: "All", icon: "👟" },
-  { name: "Casual Sneakers", value: "Sneakers", icon: "🏙️" },
-  { name: "Performance Sports", value: "Sports", icon: "🏃" },
+  { name: "Top Deals", value: "topDeals", icon: "🔥" },
+  { name: "Casual Sneakers", value: "casual", icon: "🏙️" },
+  { name: "Performance Sports", value: "running", icon: "🏃" },
   { name: "Premium Drops", value: "premium", icon: "✨" },
 ];
 
