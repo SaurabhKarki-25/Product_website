@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import ProtectedRoute from "../components/Protectedroute"; // Adjust path as necessary
-import DashboardNavbar from "../components/Navbar";
+import DashboardNavbar from "../components/DashboardNavbar";
 import CartPanel from "../components/CartPanel";
 import SectionRow from "../components/products/SectionRow";
 import FilterStrip from "../components/products/FilterStrip";
