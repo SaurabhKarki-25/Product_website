@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Menu,
   X,
@@ -10,15 +10,16 @@ import {
   LogOut,
 } from "lucide-react";
 
-export default function ResponsiveShoeNavbar({
+export default function DashboardNavbar({
   search = "",
   setSearch = () => {},
   cart = [],
+  showCart = false, // Added for visual feedback
   setShowCart = () => {},
   router,
 }) {
   const [openSearch, setOpenSearch] = useState(false);
-  const [showMenu, setShowMenu] = useState(false); // Controls the mobile drawer
+  const [showMenu, setShowMenu] = useState(false);
   const drawerRef = useRef(null);
 
   const handleLogout = () => {
@@ -27,34 +28,75 @@ export default function ResponsiveShoeNavbar({
     router.push("/");
   };
 
-  // Utility class for common icon styling
   const iconStyle = "text-cyan-300 hover:text-cyan-100 cursor-pointer transition-colors duration-200";
 
-  // --- Mobile Drawer Logic (Click/Escape outside) ---
+  // --- State Synchronization Handlers ---
+  
+  // 1. Handles opening/closing the Mobile Search Bar
+  const handleToggleSearch = useCallback(() => {
+    setOpenSearch(prev => {
+        const newState = !prev;
+        if (newState) {
+            setShowMenu(false); // Close menu if opening search
+            setShowCart(false); // Close cart if opening search
+        }
+        return newState;
+    });
+  }, [setShowCart]);
+
+  // 2. Handles opening/closing the Mobile Drawer Menu
+  const handleToggleMenu = useCallback(() => {
+    setShowMenu(prev => {
+        const newState = !prev;
+        if (newState) {
+            setOpenSearch(false); // Close search if opening menu
+            setShowCart(false); // Close cart if opening menu
+        }
+        return newState;
+    });
+  }, [setShowCart]);
+
+  // 3. Handles opening/closing the Cart Panel (used by both desktop icon and mobile menu item)
+  const handleToggleCart = useCallback(() => {
+    setShowCart(prev => {
+        const newState = !prev;
+        if (newState) {
+            setOpenSearch(false); // Close search if opening cart
+            setShowMenu(false);  // Close menu if opening cart
+        }
+        return newState;
+    });
+  }, [setShowCart]);
+
+  // --- Accessibility/UX (Click/Escape outside) ---
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Check if click is outside the drawer AND outside the menu icon itself
-      if (drawerRef.current && !drawerRef.current.contains(event.target) && !document.querySelector('.menu-icon').contains(event.target)) {
+      // Logic to close the menu if clicking outside the drawer
+      if (showMenu && drawerRef.current && !drawerRef.current.contains(event.target) && !document.querySelector('.menu-icon')?.contains(event.target)) {
         setShowMenu(false);
+      }
+      // Logic to close the search if clicking outside the mobile search bar
+      if (openSearch && !document.querySelector('.mobile-search-toggle')?.contains(event.target) && !document.querySelector('.mobile-search-input-wrapper')?.contains(event.target)) {
+         // Note: We don't auto-close search on desktop for better flow
       }
     };
 
     const handleEscapeKey = (event) => {
       if (event.key === 'Escape') {
-        setShowMenu(false);
+        if (showMenu) setShowMenu(false);
+        if (openSearch) setOpenSearch(false);
+        if (showCart) setShowCart(false);
       }
     };
 
-    if (showMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscapeKey);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscapeKey);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscapeKey);
     };
-  }, [showMenu]);
+  }, [showMenu, openSearch, showCart, setShowCart]);
   // --------------------------------------------------
 
   return (
@@ -69,7 +111,7 @@ export default function ResponsiveShoeNavbar({
           ShoeStore
         </div>
 
-        {/* DESKTOP NAV (Search, Cart, Profile, Logout) */}
+        {/* DESKTOP NAV */}
         <div className="hidden md:flex items-center gap-5">
 
           {/* Search */}
@@ -84,12 +126,12 @@ export default function ResponsiveShoeNavbar({
             />
           </div>
 
-          {/* Cart */}
+          {/* Cart - State-aware coloring and handler */}
           <div
             className="relative cursor-pointer"
-            onClick={() => setShowCart((prev) => !prev)}
+            onClick={handleToggleCart}
           >
-            <ShoppingCart size={26} className={iconStyle} />
+            <ShoppingCart size={26} className={showCart ? "text-cyan-100" : iconStyle} />
             {cart.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-cyan-500 text-black rounded-full w-5 h-5 text-xs flex items-center justify-center font-semibold">
                 {cart.length}
@@ -113,28 +155,41 @@ export default function ResponsiveShoeNavbar({
           </button>
         </div>
 
-        {/* MOBILE ICONS (Search, Menu) */}
+        {/* MOBILE ICONS */}
         <div className="md:hidden flex items-center gap-4">
 
           {/* Search icon toggle */}
           <Search
             size={26}
-            className={iconStyle}
-            onClick={() => setOpenSearch((o) => !o)}
+            className={`${iconStyle} mobile-search-toggle`}
+            onClick={handleToggleSearch}
           />
+
+          {/* Cart Icon (Mobile) */}
+          <div 
+             className="relative cursor-pointer"
+             onClick={handleToggleCart}
+          >
+            <ShoppingCart size={26} className={showCart ? "text-cyan-100" : iconStyle} />
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-cyan-500 text-black rounded-full w-5 h-5 text-xs flex items-center justify-center font-semibold">
+                {cart.length}
+              </span>
+            )}
+          </div>
 
           {/* Hamburger Menu icon */}
           <Menu
             size={28}
-            className={`${iconStyle} menu-icon`} // Added class for click handler
-            onClick={() => setShowMenu(true)}
+            className={`${iconStyle} menu-icon`}
+            onClick={handleToggleMenu}
           />
         </div>
       </nav>
 
-      {/* MOBILE SEARCH BAR (Animated slide-down) */}
+      {/* MOBILE SEARCH BAR */}
       <div 
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out mobile-search-input-wrapper ${
           openSearch ? 'max-h-20 border-t border-cyan-500/20' : 'max-h-0'
         }`}
       >
@@ -180,13 +235,10 @@ export default function ResponsiveShoeNavbar({
               {/* Menu Items */}
               <div className="flex flex-col gap-2">
                 
-                {/* Cart - BACKGROUND BLACK APPLIED HERE */}
+                {/* Cart - Uses new handler */}
                 <button
-                  onClick={() => {
-                    setShowCart((prev) => !prev);
-                    setShowMenu(false);
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-3 text-white/90 text-base font-medium **bg-black** hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
+                  onClick={handleToggleCart} // Opens cart, closes menu via handler
+                  className="w-full flex items-center justify-between px-3 py-3 text-white/90 text-base font-medium bg-black hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
                 >
                   <span className="flex items-center gap-3">
                     <ShoppingCart size={20} className="text-cyan-300" />
@@ -199,27 +251,27 @@ export default function ResponsiveShoeNavbar({
                   )}
                 </button>
 
-                {/* Profile - BACKGROUND BLACK APPLIED HERE */}
+                {/* Profile */}
                 <button
                   onClick={() => {
                     router.push("/profile");
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 text-white/90 text-base font-medium **bg-black** hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
+                  className="w-full flex items-center gap-3 px-3 py-3 text-white/90 text-base font-medium bg-black hover:bg-cyan-500/20 rounded-lg transition-colors duration-200"
                 >
                   <User size={20} className="text-cyan-300" />
                   Profile
                 </button>
               </div>
 
-              {/* Logout (Stuck to the bottom) - BACKGROUND BLACK APPLIED HERE */}
+              {/* Logout (Stuck to the bottom) */}
               <div className="mt-auto pt-4 border-t border-cyan-500/20">
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     handleLogout();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 text-red-400 text-base font-medium **bg-black** hover:bg-red-500/20 rounded-lg transition-colors duration-200"
+                  className="w-full flex items-center gap-3 px-3 py-3 text-red-400 text-base font-medium bg-black hover:bg-red-500/20 rounded-lg transition-colors duration-200"
                 >
                   <LogOut size={20} />
                   Logout

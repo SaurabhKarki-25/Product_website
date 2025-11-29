@@ -2,13 +2,13 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import ProtectedRoute from "../components/Protectedroute";
-import DashboardNavbar from "../components/DashboardNavbar"; // Assuming this is your responsive version
+import DashboardNavbar from "../components/DashboardNavbar"; // Use the updated Navbar
 import { jsPDF } from "jspdf";
 import { useRouter } from "next/navigation";
-import { Search, X } from "lucide-react"; // Import for the search panel
+import { Search, X } from "lucide-react";
 
 // =========================================================================
-// 🚀 1. CUSTOM HOOK FOR DEBOUNCING (Performance Improvement)
+// CUSTOM HOOK FOR DEBOUNCING (Performance Improvement)
 // =========================================================================
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -27,20 +27,20 @@ const useDebounce = (value, delay) => {
 };
 
 // =========================================================================
-// 2. MAIN DASHBOARD COMPONENT
+// MAIN DASHBOARD COMPONENT
 // =========================================================================
-export default function Dashboard() {
+export default function dashboard() {
   const router = useRouter();
 
   const [rawSearch, setRawSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [cart, setCart] = useState([]);
-  const [showCart, setShowCart] = useState(false);
+  const [showCart, setShowCart] = useState(false); // Managed here
 
   // Debounce the raw search input by 300ms
   const debouncedSearch = useDebounce(rawSearch, 300);
 
-  // ================== PRODUCT DATA (Same as before) ==================
+  // ================== PRODUCT DATA ==================
   const products = [
     // TOP DEALS
     { id: 1, name: "Nike Air Max 270", brand: "Nike", category: "Sneakers", segment: "topDeals", price: 7899, mrp: 9999, discount: "21% off", color: "Black/White", size: 42, img: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg", tag: "Trending" },
@@ -72,11 +72,8 @@ export default function Dashboard() {
     { id: 24, name: "Nike Air Max Plus 3", brand: "Nike", category: "Sneakers", segment: "premium", price: 14999, mrp: 16999, discount: "12% off", color: "Blue/Black", size: 44, img: "https://images.pexels.com/photos/1407359/pexels-photo-1407359.jpeg", tag: "Top Rated" },
   ];
 
-  // =========================================================================
-  // ⚡ 3. OPTIMIZED FILTERING with useMemo
-  // =========================================================================
+  // ⚡ OPTIMIZED FILTERING with useMemo
   const filteredProducts = useMemo(() => {
-    // Only run this expensive filter when products, debouncedSearch, or category changes.
     const searchLower = debouncedSearch.toLowerCase();
     
     return products.filter((item) => {
@@ -96,7 +93,12 @@ export default function Dashboard() {
     [filteredProducts]
   );
 
-  // ================== CART LOGIC ==================
+  // ⚡ OPTIMIZED CART TOTAL with useMemo
+  const cartTotal = useMemo(() => 
+    cart.reduce((sum, item) => sum + item.price * item.qty, 0),
+    [cart]
+  );
+
   const addToCart = (item) => {
     setCart((prev) => {
       const exists = prev.find((p) => p.id === item.id);
@@ -107,34 +109,24 @@ export default function Dashboard() {
       }
       return [...prev, { ...item, qty: 1 }];
     });
+    // For better UX, show cart immediately after adding an item
+    setShowCart(true); 
   };
-
-  // Cart total also uses useMemo for optimization
-  const cartTotal = useMemo(() => 
-    cart.reduce((sum, item) => sum + item.price * item.qty, 0),
-    [cart]
-  );
 
   const sendWhatsAppOrder = () => {
     if (!cart.length) return;
-    // ... (unchanged WhatsApp logic)
     const phone = "916396088269";
     let msg = `🧾 *Your ShoeStore Order*\n\n`;
-
     cart.forEach((item, index) => {
       msg += `${index + 1}. *${item.name}* (${item.brand})\n`;
-      msg += `  Category: ${item.category}\n`;
-      msg += `  Qty: ${item.qty}\n`;
-      msg += ` Price: ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}\n`;
-      msg += ` Image: ${item.img}\n\n`;
+      msg += `   Qty: ${item.qty}\n`;
+      msg += `   Price: ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}\n\n`;
     });
-
     msg += `------------------------\n`;
     msg += `*Total:* ₹${cartTotal}\n`;
     msg += `------------------------\n\n`;
     msg += `📍 Please share your *Name*, *Address* & *Phone Number*.\n`;
     msg += `🙏 Thank you for shopping with *ShoeStore*!`;
-
     window.open(
       `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,
       "_blank"
@@ -143,18 +135,14 @@ export default function Dashboard() {
 
   const downloadPDF = () => {
     if (!cart.length) return;
-    // ... (unchanged PDF logic)
     const doc = new jsPDF();
     let y = 20;
-
     doc.setFontSize(18);
     doc.text("ShoeStore Invoice", 20, y);
     y += 10;
-
     doc.setFontSize(12);
     doc.text(`Date: ${new Date().toLocaleString()}`, 20, y);
     y += 10;
-
     cart.forEach((item, idx) => {
       doc.text(
         `${idx + 1}. ${item.name} (${item.brand}) - Qty: ${item.qty}  - ₹${item.qty * item.price}`,
@@ -163,13 +151,11 @@ export default function Dashboard() {
       );
       y += 8;
     });
-
     y += 6;
     doc.text(`------------------------------`, 20, y);
     y += 10;
     doc.setFontSize(14);
     doc.text(`Total: ₹${cartTotal}`, 20, y);
-
     doc.save("shoestore_invoice.pdf");
   };
   // =========================================================================
@@ -233,11 +219,11 @@ export default function Dashboard() {
       </button>
     </div>
   );
-
+  
   const HeroSection = () => (
     <section className="w-full bg-gradient-to-r from-[#041625] via-[#021018] to-[#041625] text-white px-4 sm:px-6 md:px-10 pt-6 pb-10 rounded-b-3xl shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+      {/* ... (Hero content is unchanged) */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-        {/* Left */}
         <div className="flex-1">
           <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-cyan-300 mb-2">
             Exclusive Drop
@@ -271,7 +257,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right */}
         <div className="flex-1 flex justify-center">
           <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full bg-gradient-to-tr from-cyan-500/40 via-transparent to-purple-500/30 flex items-center justify-center shadow-[0_0_45px_rgba(0,255,255,0.5)]">
             <img
@@ -315,9 +300,7 @@ export default function Dashboard() {
     );
   };
   
-  // =========================================================================
-  // ⚡ 4. DEDICATED SEARCH PANEL/RESULTS
-  // =========================================================================
+  // ⚡ DEDICATED SEARCH PANEL/RESULTS
   const SearchPanel = () => {
     if (!debouncedSearch) return null;
 
@@ -335,7 +318,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="bg-[#041625] border border-cyan-500/30 rounded-xl p-4 sm:p-6 min-h-[200px]">
+        <div className="bg-[#041625] border border-cyan-500/30 rounded-xl p-4 sm:p-6">
           {filteredProducts.length === 0 ? (
             <div className="text-center py-10">
               <Search size={32} className="text-white/40 mx-auto mb-3" />
@@ -347,6 +330,7 @@ export default function Dashboard() {
               </p>
             </div>
           ) : (
+            // Grid layout for search results for easy scanning
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 justify-items-center">
               {filteredProducts.map((item) => (
                 <Card key={item.id} item={item} />
@@ -363,15 +347,14 @@ export default function Dashboard() {
     <ProtectedRoute>
       <div className="min-h-screen bg-[#020d14] text-white pb-16">
         {/* NAVBAR */}
-        {/* Pass rawSearch to Navbar for immediate visual feedback on input */}
         <DashboardNavbar
           search={rawSearch} 
           setSearch={setRawSearch}
-          category={category}
-          setCategory={setCategory}
           cart={cart}
+          showCart={showCart} // Pass showCart state for Navbar styling
           setShowCart={setShowCart}
           router={router}
+          // Note: category and setCategory are currently unused by the Navbar itself
         />
 
         {/* PAGE CONTENT (padding-top for fixed navbar) */}
@@ -416,12 +399,19 @@ export default function Dashboard() {
             </>
           )}
 
-          {/* CART PANEL */}
+          {/* 🛒 CART PANEL (Uses dynamic positioning for better responsiveness) */}
           {showCart && (
-            <div className="fixed inset-x-4 top-24 md:top-24 md:right-6 md:left-auto bg-[#03131b] border border-cyan-500/40 rounded-xl w-auto md:w-80 p-4 shadow-[0_0_25px_rgba(0,255,255,0.4)] z-50">
+            <div 
+              className="fixed inset-x-4 top-24 md:top-24 md:right-6 md:left-auto bg-[#03131b] border border-cyan-500/40 rounded-xl w-auto md:w-80 p-4 shadow-[0_0_25px_rgba(0,255,255,0.4)] z-50 
+              transition-all duration-300 ease-out transform translate-y-0"
+              // Adding an overlay for UX when cart is open (optional, depends on required scope)
+            >
               <h2 className="text-base sm:text-lg font-semibold text-cyan-300 mb-3">
                 Your Cart
               </h2>
+              <button onClick={() => setShowCart(false)} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
 
               {cart.length === 0 ? (
                 <p className="text-white/60 text-sm">No items added yet.</p>
