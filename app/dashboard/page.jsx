@@ -107,7 +107,7 @@ export default function Dashboard() {
 
   const sendWhatsAppOrder = () => {
     if (!cart.length) return;
-    const phone = "91XXXXXXXXXX";
+    const phone = "916396088269";
     let msg = `🧾 *Your ShoeStore Order*\n\n`;
     cart.forEach((item, index) => {
       msg += `${index + 1}. *${item.name}* (${item.brand}) - Qty: ${item.qty}\n`;
