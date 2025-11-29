@@ -1,53 +1,65 @@
 "use client";
 
-import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
+import { Menu, X, Search, ShoppingCart, User, LogOut } from "lucide-react";
 
 export default function DashboardNavbar({
-  search,
-  setSearch,
-  category,
-  setCategory,
-  cart,
-  setShowCart,
+  search = "",
+  setSearch = () => {},
+  category = "All",
+  setCategory = () => {},
+  cart = [],
+  setShowCart = () => {},
   router,
 }) {
-  const [open, setOpen] = useState(false);
+  const [openSearch, setOpenSearch] = useState(false);
+  const [profileMenu, setProfileMenu] = useState(false);
+
+  const categories = ["All", "Sports", "Sneakers"];
+
+  const handleLogout = () => {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("user");
+    window.location.replace("/");
+  };
 
   return (
-    <header className="w-full fixed top-0 z-40 bg-[#041625]/80 backdrop-blur-xl border-b border-cyan-500/30">
+    <header className="fixed top-0 left-0 w-full z-40 bg-[#041625]/85 backdrop-blur-xl border-b border-cyan-500/30">
       <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
 
-        {/* Logo */}
+        {/* LOGO */}
         <div
-          className="text-cyan-300 text-xl font-bold cursor-pointer"
+          className="text-cyan-300 text-xl font-bold tracking-wide cursor-pointer"
           onClick={() => router.push("/")}
         >
           ShoeStore
         </div>
 
-        {/* Desktop Icons */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* DESKTOP CONTENT (UNCHANGED) */}
+        <div className="hidden md:flex items-center gap-5">
 
           {/* Search */}
-          <input
-            type="text"
-            placeholder="Search shoes..."
-            className="px-4 py-2 rounded-lg bg-[#0b2a33] text-white border border-cyan-500/30 text-sm w-60"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="flex items-center bg-[#041b25] border border-cyan-500/30 px-3 py-2 rounded-lg w-64">
+            <Search size={18} className="text-cyan-300 mr-2" />
+            <input
+              type="text"
+              placeholder="Search shoes..."
+              className="bg-transparent outline-none text-sm text-white w-full"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
           {/* Categories */}
-          <div className="flex gap-2">
-            {["All", "Sports", "Sneakers"].map((cat) => (
+          <div className="flex items-center gap-2">
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`px-3 py-2 rounded-lg text-sm border transition ${
+                className={`px-3 py-2 rounded-lg text-sm border ${
                   category === cat
-                    ? "text-cyan-300 border-cyan-300"
-                    : "text-white/70 border-white/20 hover:border-cyan-300"
+                    ? "border-cyan-300 text-cyan-300 bg-cyan-500/10"
+                    : "border-white/20 text-white/70 hover:border-cyan-300"
                 }`}
               >
                 {cat}
@@ -55,86 +67,110 @@ export default function DashboardNavbar({
             ))}
           </div>
 
-          {/* Cart */}
+          {/* CART */}
           <div
             className="relative cursor-pointer"
-            onClick={() => setShowCart((p) => !p)}
+            onClick={() => setShowCart((prev) => !prev)}
           >
-            <ShoppingCart className="text-cyan-300" size={28} />
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-cyan-500 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs">
+            <ShoppingCart className="text-cyan-300" size={26} />
+            {Array.isArray(cart) && cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-cyan-500 text-black rounded-full w-5 h-5 text-xs flex items-center justify-center font-semibold">
                 {cart.length}
               </span>
             )}
           </div>
 
-          {/* Profile */}
-          <User
-            className="text-cyan-300 cursor-pointer"
-            size={28}
-            onClick={() => router.push("/profile")}
-          />
+          {/* Profile Menu */}
+          <div className="relative">
+            <User
+              className="text-cyan-300 cursor-pointer"
+              size={26}
+              onClick={() => setProfileMenu((prev) => !prev)}
+            />
+
+            {profileMenu && (
+              <div className="absolute right-0 mt-2 bg-[#03151f] border border-cyan-500/20 rounded-lg w-40 shadow-xl py-2">
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="block w-full text-left px-4 py-2 text-white/90 hover:bg-cyan-500/10 text-sm"
+                >
+                  Profile
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 text-sm"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-cyan-300"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X size={28} /> : <Menu size={28} />}
-        </button>
+        {/* MOBILE BUTTONS */}
+        <div className="md:hidden flex items-center gap-4">
+
+          {/* Search Toggle */}
+          <Search
+            className="text-cyan-300 cursor-pointer"
+            size={26}
+            onClick={() => setOpenSearch((prev) => !prev)}
+          />
+
+          {/* Cart */}
+          <div
+            className="relative cursor-pointer"
+            onClick={() => setShowCart((prev) => !prev)}
+          >
+            <ShoppingCart className="text-cyan-300" size={26} />
+            {cart.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 text-[10px] bg-cyan-500 text-black rounded-full flex items-center justify-center">
+                {cart.length}
+              </span>
+            )}
+          </div>
+
+          {/* Profile Dropdown */}
+          <div className="relative">
+            <User
+              size={26}
+              className="text-cyan-300 cursor-pointer"
+              onClick={() => setProfileMenu((p) => !p)}
+            />
+
+            {profileMenu && (
+              <div className="absolute right-0 mt-3 w-36 bg-[#03151f] border border-cyan-500/30 rounded-xl py-2 shadow-xl">
+
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="w-full text-left px-4 py-2 text-white/90 text-sm hover:bg-cyan-500/10"
+                >
+                  Profile
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-red-500/10"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </nav>
 
-      {/* Mobile Menu */}
-      {open && (
-        <div className="md:hidden bg-[#041625]/95 px-4 py-4 border-t border-cyan-500/20">
-          
-          {/* Search */}
+      {/* MOBILE SEARCH BAR (Slide Down) */}
+      {openSearch && (
+        <div className="md:hidden bg-[#041b25] border-t border-cyan-500/20 px-4 py-3">
           <input
             type="text"
             placeholder="Search shoes..."
-            className="w-full px-4 py-2 mb-3 rounded-lg bg-[#0b2a33] text-white border border-cyan-500/30 text-sm"
+            className="w-full bg-[#0b2330] text-white px-4 py-2 rounded-lg border border-cyan-500/30 text-sm outline-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-
-          {/* Categories Horizontal Scroll */}
-          <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-            {["All", "Sports", "Sneakers"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm border ${
-                  category === cat
-                    ? "text-cyan-300 border-cyan-300"
-                    : "text-white/70 border-white/30"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Icons */}
-          <div className="flex items-center justify-between mt-4">
-            <div
-              className="relative cursor-pointer"
-              onClick={() => setShowCart((p) => !p)}
-            >
-              <ShoppingCart className="text-cyan-300" size={28} />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-cyan-500 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  {cart.length}
-                </span>
-              )}
-            </div>
-
-            <User
-              className="text-cyan-300 cursor-pointer"
-              size={28}
-              onClick={() => router.push("/profile")}
-            />
-          </div>
         </div>
       )}
     </header>
