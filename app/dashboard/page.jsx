@@ -123,10 +123,10 @@ export default function Dashboard() {
 
     cart.forEach((item, index) => {
       msg += `${index + 1}. *${item.name}* (${item.brand})\n`;
-      msg += `   Category: ${item.category}\n`;
-      msg += `   Qty: ${item.qty}\n`;
-      msg += `   Price: ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}\n`;
-      msg += `   Image: ${item.img}\n\n`;
+      msg += `  Category: ${item.category}\n`;
+      msg += `  Qty: ${item.qty}\n`;
+      msg += ` Price: ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}\n`;
+      msg += ` Image: ${item.img}\n\n`;
     });
 
     msg += `------------------------\n`;
